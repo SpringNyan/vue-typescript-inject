@@ -1,16 +1,5 @@
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = Object.setPrototypeOf ||
-        ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-        function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-import "reflect-metadata";
 import { createDecorator } from "vue-class-component";
-var injectableDecorator = function () { return; };
+var injectableDecorator = function () { return undefined; };
 export function Injectable() {
     return injectableDecorator;
 }
@@ -29,24 +18,26 @@ export function Inject(token) {
             if (options.dependencies == null) {
                 options.dependencies = {};
             }
-            options.dependencies[key] = token;
+            if (options.dependencies[key] == null) {
+                options.dependencies[key] = {};
+            }
+            options.dependencies[key].token = token;
         });
         decorator(target, propertyKey);
     };
 }
-var TokenNotFoundError = (function (_super) {
-    __extends(TokenNotFoundError, _super);
-    function TokenNotFoundError(message) {
-        var _this = _super.call(this, message) || this;
-        if (message == null) {
-            _this.message = "Token not found.";
+export function Optional() {
+    return createDecorator(function (options, key) {
+        if (options.dependencies == null) {
+            options.dependencies = {};
         }
-        return _this;
-    }
-    return TokenNotFoundError;
-}(Error));
-export { TokenNotFoundError };
-var Injector = (function () {
+        if (options.dependencies[key] == null) {
+            options.dependencies[key] = {};
+        }
+        options.dependencies[key].optional = true;
+    });
+}
+var Injector = /** @class */ (function () {
     function Injector(providers, parent) {
         var _this = this;
         this._tokenProviderMap = new Map();
@@ -63,7 +54,8 @@ var Injector = (function () {
         enumerable: true,
         configurable: true
     });
-    Injector.prototype.get = function (token) {
+    Injector.prototype.get = function (token, notFoundValue) {
+        if (notFoundValue === void 0) { notFoundValue = Injector.THROW_IF_NOT_FOUND; }
         if (this._tokenInstanceMap.has(token)) {
             return this._tokenInstanceMap.get(token);
         }
@@ -78,7 +70,12 @@ var Injector = (function () {
             this._tokenInstanceMap.set(token, instance);
             return instance;
         }
-        throw new TokenNotFoundError();
+        if (notFoundValue === Injector.THROW_IF_NOT_FOUND) {
+            throw new Error("Token is not found.");
+        }
+        else {
+            return notFoundValue;
+        }
     };
     Injector.prototype.resolveProviderInstance = function (provider) {
         if (typeof provider === "function") {
@@ -125,24 +122,25 @@ var Injector = (function () {
         });
         return factory.apply(void 0, depInstances);
     };
+    Injector.THROW_IF_NOT_FOUND = new Object();
     return Injector;
 }());
 export { Injector };
-var VueTypeScriptInject = (function () {
+var VueTypeScriptInject = /** @class */ (function () {
     function VueTypeScriptInject() {
     }
-    // tslint:disable-next-line:no-shadowed-variable
     VueTypeScriptInject.install = function (Vue) {
         Vue.mixin({
             beforeCreate: function () {
                 var _this = this;
                 var providers = this.$options.providers || [];
-                var parent = this.$parent != null ? this.$parent.$injector : undefined;
-                this.$injector = new Injector(providers, parent);
+                var parentInjector = this.$parent != null ? this.$parent.$injector : undefined;
+                this.$injector = new Injector(providers, parentInjector);
                 if (this.$options.dependencies != null) {
                     var dependencies_1 = this.$options.dependencies;
                     Object.keys(dependencies_1).forEach(function (propertyKey) {
-                        _this[propertyKey] = _this.$injector.get(dependencies_1[propertyKey]);
+                        var _a = dependencies_1[propertyKey], token = _a.token, optional = _a.optional;
+                        _this[propertyKey] = _this.$injector.get(token, optional ? null : Injector.THROW_IF_NOT_FOUND);
                     });
                 }
             }

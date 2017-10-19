@@ -5,7 +5,7 @@ import { expect } from "chai";
 import Vue from "vue";
 import Component from "vue-class-component";
 
-import VueTypeScriptInject, { Injectable, Inject } from "../dist/vue-typescript-inject";
+import VueTypeScriptInject, { Injectable, Inject } from "../dist/index";
 
 describe("vue-typescript-inject", () => {
     Vue.use(VueTypeScriptInject);

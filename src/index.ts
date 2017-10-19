@@ -1,10 +1,7 @@
-import "reflect-metadata";
-
 import Vue from "vue";
 import { createDecorator } from "vue-class-component";
 
 declare module "vue/types/vue" {
-    // tslint:disable-next-line:no-shadowed-variable
     export interface Vue {
         readonly $injector: Injector;
     }
@@ -18,24 +15,28 @@ declare module "vue/types/options" {
 }
 
 export type VueClass = typeof Vue;
-
+export type Token = Object;
 export type Type<T extends Object = Object> = new (...args: any[]) => T;
 
-export type Dependencies = { [propertyKey: string]: Object };
+export type DependencyOptions = {
+    token?: Token;
+    optional?: boolean;
+};
+export type Dependencies = { [propertyKey: string]: DependencyOptions };
 
 export type Provider = TypeProvider | ValueProvider | ClassProvider | ExistingProvider | FactoryProvider;
 export type TypeProvider = Type;
-export type ValueProvider = { provide: Object; useValue: any; };
-export type ClassProvider = { provide: Object; useClass: Type; };
-export type ExistingProvider = { provide: Object; useExisting: Object; };
-export type FactoryProvider = { provide: Object; useFactory: Function; deps?: Object[]; };
+export type ValueProvider = { provide: Token; useValue: any; };
+export type ClassProvider = { provide: Token; useClass: Type; };
+export type ExistingProvider = { provide: Token; useExisting: Token; };
+export type FactoryProvider = { provide: Token; useFactory: Function; deps?: Token[]; };
 
-const injectableDecorator = () => { return; };
+const injectableDecorator = () => undefined;
 export function Injectable(): ClassDecorator {
     return injectableDecorator;
 }
 
-export function Inject(token?: Object): PropertyDecorator {
+export function Inject(token?: Token): PropertyDecorator {
     return (target: Vue, propertyKey: string) => {
         if (token === undefined) {
             token = Reflect.getMetadata("design:type", target, propertyKey);
@@ -52,31 +53,41 @@ export function Inject(token?: Object): PropertyDecorator {
                 options.dependencies = {};
             }
 
-            options.dependencies[key] = token!;
+            if (options.dependencies[key] == null) {
+                options.dependencies[key] = {};
+            }
+
+            options.dependencies[key].token = token;
         });
 
         decorator(target, propertyKey);
     };
 }
 
-export class TokenNotFoundError extends Error {
-    constructor(message?: string) {
-        super(message);
-
-        if (message == null) {
-            this.message = "Token not found.";
+export function Optional(): PropertyDecorator {
+    return createDecorator((options, key) => {
+        if (options.dependencies == null) {
+            options.dependencies = {};
         }
-    }
+
+        if (options.dependencies[key] == null) {
+            options.dependencies[key] = {};
+        }
+
+        options.dependencies[key].optional = true;
+    });
 }
 
 export class Injector {
+    public static readonly THROW_IF_NOT_FOUND = new Object();
+
     public get parent(): Injector | null {
         return this._parent;
     }
 
     private readonly _parent: Injector | null;
-    private readonly _tokenProviderMap = new Map<Object, Provider>();
-    private readonly _tokenInstanceMap = new Map<Object, any>();
+    private readonly _tokenProviderMap = new Map<Token, Provider>();
+    private readonly _tokenInstanceMap = new Map<Token, any>();
 
     constructor(providers: Provider[], parent?: Injector) {
         providers.forEach((provider) => {
@@ -89,7 +100,7 @@ export class Injector {
         this._parent = parent || null;
     }
 
-    public get(token: Object): any {
+    public get(token: Token, notFoundValue: any = Injector.THROW_IF_NOT_FOUND): any {
         if (this._tokenInstanceMap.has(token)) {
             return this._tokenInstanceMap.get(token);
         }
@@ -107,7 +118,11 @@ export class Injector {
             return instance;
         }
 
-        throw new TokenNotFoundError();
+        if (notFoundValue === Injector.THROW_IF_NOT_FOUND) {
+            throw new Error("Token is not found.");
+        } else {
+            return notFoundValue;
+        }
     }
 
     private resolveProviderInstance(provider: Provider): any {
@@ -160,18 +175,18 @@ export class Injector {
 }
 
 export default class VueTypeScriptInject {
-    // tslint:disable-next-line:no-shadowed-variable
     public static install(Vue: VueClass): void {
         Vue.mixin({
             beforeCreate(this: Vue & { [propertyKey: string]: any; }): void {
                 const providers = this.$options.providers || [];
-                const parent = this.$parent != null ? this.$parent.$injector : undefined;
-                (this as any).$injector = new Injector(providers, parent);
+                const parentInjector = this.$parent != null ? this.$parent.$injector : undefined;
+                (this as any).$injector = new Injector(providers, parentInjector);
 
                 if (this.$options.dependencies != null) {
                     const dependencies = this.$options.dependencies;
                     Object.keys(dependencies).forEach((propertyKey) => {
-                        this[propertyKey] = this.$injector.get(dependencies[propertyKey]);
+                        const { token, optional } = dependencies[propertyKey];
+                        this[propertyKey] = this.$injector.get(token!, optional ? null : Injector.THROW_IF_NOT_FOUND);
                     });
                 }
             }

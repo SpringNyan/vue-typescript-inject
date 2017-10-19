@@ -1,11 +1,11 @@
 {
   "name": "vue-typescript-inject",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "description": "TypeScript inject decorator for Vue component",
   "authors": "SpringNyan",
   "license": "MIT",
-  "main": "dist/vue-typescript-inject.js",
-  "typings": "dist/vue-typescript-inject.d.ts",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SpringNyan/vue-typescript-inject.git"
@@ -16,19 +16,18 @@
     "decorator",
     "inject"
   ],
-  "dependencies": {
-    "reflect-metadata": "^0.1.10",
-    "vue": "^2.4.2",
-    "vue-class-component": "^5.0.2"
-  },
   "devDependencies": {
     "@types/chai": "^4.0.4",
-    "@types/mocha": "^2.2.42",
-    "chai": "^4.1.1",
-    "mocha": "^3.5.0",
-    "ts-loader": "^2.3.3",
-    "typescript": "^2.4.2",
-    "webpack": "^3.5.5"
+    "@types/mocha": "^2.2.43",
+    "@types/reflect-metadata": "0.0.5",
+    "chai": "^4.1.2",
+    "mocha": "^4.0.1",
+    "reflect-metadata": "^0.1.10",
+    "ts-loader": "^3.0.3",
+    "typescript": "^2.5.3",
+    "vue": "^2.5.2",
+    "vue-class-component": "^6.0.0",
+    "webpack": "^3.8.1"
   },
   "scripts": {
     "build": "tsc -p .",
