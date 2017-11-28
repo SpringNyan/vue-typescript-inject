@@ -27,47 +27,46 @@ export function Inject(token) {
     };
 }
 export function Optional() {
-    return createDecorator(function (options, key) {
-        if (options.dependencies == null) {
-            options.dependencies = {};
-        }
-        if (options.dependencies[key] == null) {
-            options.dependencies[key] = {};
-        }
-        options.dependencies[key].optional = true;
-    });
+    return function (target, propertyKey) {
+        var decorator = createDecorator(function (options, key) {
+            if (options.dependencies == null) {
+                options.dependencies = {};
+            }
+            if (options.dependencies[key] == null) {
+                options.dependencies[key] = {};
+            }
+            options.dependencies[key].optional = true;
+        });
+        decorator(target, propertyKey);
+    };
 }
 var Injector = /** @class */ (function () {
     function Injector(providers, parent) {
         var _this = this;
         this._tokenProviderMap = new Map();
-        this._tokenInstanceMap = new Map();
         providers.forEach(function (provider) {
             _this._tokenProviderMap.set(typeof provider === "function" ? provider : provider.provide, provider);
         });
-        this._parent = parent || null;
+        this._parent = typeof parent === "function"
+            ? parent
+            : function () { return parent || null; };
     }
     Object.defineProperty(Injector.prototype, "parent", {
         get: function () {
-            return this._parent;
+            return this._parent();
         },
         enumerable: true,
         configurable: true
     });
     Injector.prototype.get = function (token, notFoundValue) {
         if (notFoundValue === void 0) { notFoundValue = Injector.THROW_IF_NOT_FOUND; }
-        if (this._tokenInstanceMap.has(token)) {
-            return this._tokenInstanceMap.get(token);
-        }
         if (this._tokenProviderMap.has(token)) {
             var provider = this._tokenProviderMap.get(token);
             var instance = this.resolveProviderInstance(provider);
-            this._tokenInstanceMap.set(token, instance);
             return instance;
         }
         if (this.parent != null) {
             var instance = this.parent.get(token);
-            this._tokenInstanceMap.set(token, instance);
             return instance;
         }
         if (notFoundValue === Injector.THROW_IF_NOT_FOUND) {
@@ -134,8 +133,8 @@ var VueTypeScriptInject = /** @class */ (function () {
             beforeCreate: function () {
                 var _this = this;
                 var providers = this.$options.providers || [];
-                var parentInjector = this.$parent != null ? this.$parent.$injector : undefined;
-                this.$injector = new Injector(providers, parentInjector);
+                var parent = function () { return _this.$parent != null ? _this.$parent.$injector : null; };
+                this.$injector = new Injector(providers, parent);
                 if (this.$options.dependencies != null) {
                     var dependencies_1 = this.$options.dependencies;
                     Object.keys(dependencies_1).forEach(function (propertyKey) {

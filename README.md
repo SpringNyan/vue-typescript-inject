@@ -1,3 +1,3 @@
 # vue-typescript-inject
 
-TypeScript inject decorator for Vue component
+Angular-like injector for Vue

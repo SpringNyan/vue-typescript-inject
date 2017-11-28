@@ -1,4 +1,4 @@
-import Vue from "vue";
+import Vue, { VueConstructor } from "vue";
 import { createDecorator } from "vue-class-component";
 
 declare module "vue/types/vue" {
@@ -9,20 +9,21 @@ declare module "vue/types/vue" {
 
 declare module "vue/types/options" {
     export interface ComponentOptions<V extends Vue> {
-        dependencies?: Dependencies;
+        dependencies?: DependencyOptions;
         providers?: Provider[];
     }
 }
 
-export type VueClass = typeof Vue;
 export type Token = Object;
 export type Type<T extends Object = Object> = new (...args: any[]) => T;
 
-export type DependencyOptions = {
+export type DependencyOption = {
     token?: Token;
     optional?: boolean;
 };
-export type Dependencies = { [propertyKey: string]: DependencyOptions };
+export type DependencyOptions = { [propertyKey: string]: DependencyOption };
+
+export type VueDecorator = (target: Vue, propertyKey: string) => void;
 
 export type Provider = TypeProvider | ValueProvider | ClassProvider | ExistingProvider | FactoryProvider;
 export type TypeProvider = Type;
@@ -36,7 +37,7 @@ export function Injectable(): ClassDecorator {
     return injectableDecorator;
 }
 
-export function Inject(token?: Token): PropertyDecorator {
+export function Inject(token?: Token): VueDecorator {
     return (target: Vue, propertyKey: string) => {
         if (token === undefined) {
             token = Reflect.getMetadata("design:type", target, propertyKey);
@@ -64,32 +65,35 @@ export function Inject(token?: Token): PropertyDecorator {
     };
 }
 
-export function Optional(): PropertyDecorator {
-    return createDecorator((options, key) => {
-        if (options.dependencies == null) {
-            options.dependencies = {};
-        }
+export function Optional(): VueDecorator {
+    return (target: Vue, propertyKey: string) => {
+        const decorator = createDecorator((options, key) => {
+            if (options.dependencies == null) {
+                options.dependencies = {};
+            }
 
-        if (options.dependencies[key] == null) {
-            options.dependencies[key] = {};
-        }
+            if (options.dependencies[key] == null) {
+                options.dependencies[key] = {};
+            }
 
-        options.dependencies[key].optional = true;
-    });
+            options.dependencies[key].optional = true;
+        });
+
+        decorator(target, propertyKey);
+    };
 }
 
 export class Injector {
     public static readonly THROW_IF_NOT_FOUND = new Object();
 
     public get parent(): Injector | null {
-        return this._parent;
+        return this._parent();
     }
 
-    private readonly _parent: Injector | null;
+    private readonly _parent: () => Injector | null;
     private readonly _tokenProviderMap = new Map<Token, Provider>();
-    private readonly _tokenInstanceMap = new Map<Token, any>();
 
-    constructor(providers: Provider[], parent?: Injector) {
+    constructor(providers: Provider[], parent?: (Injector | null) | (() => Injector | null)) {
         providers.forEach((provider) => {
             this._tokenProviderMap.set(
                 typeof provider === "function" ? provider : provider.provide,
@@ -97,24 +101,20 @@ export class Injector {
             );
         });
 
-        this._parent = parent || null;
+        this._parent = typeof parent === "function"
+            ? parent
+            : () => parent || null;
     }
 
     public get(token: Token, notFoundValue: any = Injector.THROW_IF_NOT_FOUND): any {
-        if (this._tokenInstanceMap.has(token)) {
-            return this._tokenInstanceMap.get(token);
-        }
-
         if (this._tokenProviderMap.has(token)) {
             const provider = this._tokenProviderMap.get(token)!;
             const instance = this.resolveProviderInstance(provider);
-            this._tokenInstanceMap.set(token, instance);
             return instance;
         }
 
         if (this.parent != null) {
             const instance = this.parent.get(token);
-            this._tokenInstanceMap.set(token, instance);
             return instance;
         }
 
@@ -175,12 +175,12 @@ export class Injector {
 }
 
 export default class VueTypeScriptInject {
-    public static install(Vue: VueClass): void {
+    public static install(Vue: VueConstructor): void {
         Vue.mixin({
             beforeCreate(this: Vue & { [propertyKey: string]: any; }): void {
                 const providers = this.$options.providers || [];
-                const parentInjector = this.$parent != null ? this.$parent.$injector : undefined;
-                (this as any).$injector = new Injector(providers, parentInjector);
+                const parent = () => this.$parent != null ? this.$parent.$injector : null;
+                (this as any).$injector = new Injector(providers, parent);
 
                 if (this.$options.dependencies != null) {
                     const dependencies = this.$options.dependencies;
