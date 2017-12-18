@@ -1,6 +1,6 @@
 {
     "name": "vue-typescript-inject",
-    "version": "0.1.2",
+    "version": "0.1.3",
     "description": "Angular-like injector for Vue",
     "authors": "SpringNyan",
     "license": "MIT",
@@ -18,8 +18,8 @@
     "devDependencies": {
         "@types/reflect-metadata": "0.0.5",
         "typescript": "^2.6.2",
-        "vue": "^2.5.9",
-        "vue-class-component": "^6.1.0"
+        "vue": "^2.5.11",
+        "vue-class-component": "^6.1.2"
     },
     "scripts": {
         "build": "tsc -p ."

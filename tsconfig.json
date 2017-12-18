@@ -6,7 +6,7 @@
             "es5",
             "es2015"
         ],
-        "module": "umd",
+        "module": "commonjs",
         "moduleResolution": "node",
         "outDir": "dist",
         "declaration": true,
