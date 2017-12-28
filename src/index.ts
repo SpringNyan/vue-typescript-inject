@@ -25,19 +25,28 @@ export type DependencyOptions = { [propertyKey: string]: DependencyOption };
 
 export type VueDecorator = (target: Vue, propertyKey: string) => void;
 
-export type Provider = TypeProvider | ValueProvider | ClassProvider | ExistingProvider | FactoryProvider;
+export type Provider =
+    | TypeProvider
+    | ValueProvider
+    | ClassProvider
+    | ExistingProvider
+    | FactoryProvider;
 export type TypeProvider = Type;
-export type ValueProvider = { provide: Token; useValue: any; };
-export type ClassProvider = { provide: Token; useClass: Type; };
-export type ExistingProvider = { provide: Token; useExisting: Token; };
-export type FactoryProvider = { provide: Token; useFactory: Function; deps?: Token[]; };
+export type ValueProvider = { provide: Token; useValue: any };
+export type ClassProvider = { provide: Token; useClass: Type };
+export type ExistingProvider = { provide: Token; useExisting: Token };
+export type FactoryProvider = {
+    provide: Token;
+    useFactory: Function;
+    deps?: Token[];
+};
 
 const injectableDecorator = () => undefined;
-export function Injectable(): ClassDecorator {
+export function injectable(): ClassDecorator {
     return injectableDecorator;
 }
 
-export function Inject(token?: Token): VueDecorator {
+export function inject(token?: Token): VueDecorator {
     return (target: Vue, propertyKey: string) => {
         if (token === undefined) {
             token = Reflect.getMetadata("design:type", target, propertyKey);
@@ -65,7 +74,7 @@ export function Inject(token?: Token): VueDecorator {
     };
 }
 
-export function Optional(): VueDecorator {
+export function optional(): VueDecorator {
     return (target: Vue, propertyKey: string) => {
         const decorator = createDecorator((options, key) => {
             if (options.dependencies == null) {
@@ -93,20 +102,25 @@ export class Injector {
     private readonly _parent: () => Injector | null;
     private readonly _tokenProviderMap = new Map<Token, Provider>();
 
-    constructor(providers: Provider[], parent?: (Injector | null) | (() => Injector | null)) {
-        providers.forEach((provider) => {
+    constructor(
+        providers: Provider[],
+        parent?: (Injector | null) | (() => Injector | null)
+    ) {
+        providers.forEach(provider => {
             this._tokenProviderMap.set(
                 typeof provider === "function" ? provider : provider.provide,
                 provider
             );
         });
 
-        this._parent = typeof parent === "function"
-            ? parent
-            : () => parent || null;
+        this._parent =
+            typeof parent === "function" ? parent : () => parent || null;
     }
 
-    public get(token: Token, notFoundValue: any = Injector.THROW_IF_NOT_FOUND): any {
+    public get(
+        token: Token,
+        notFoundValue: any = Injector.THROW_IF_NOT_FOUND
+    ): any {
         if (this._tokenProviderMap.has(token)) {
             const provider = this._tokenProviderMap.get(token)!;
             const instance = this.resolveProviderInstance(provider);
@@ -131,7 +145,9 @@ export class Injector {
         } else if ("useValue" in provider) {
             return (provider as ValueProvider).useValue;
         } else if ("useClass" in provider) {
-            return this.resolveTypeInstance((provider as ClassProvider).useClass);
+            return this.resolveTypeInstance(
+                (provider as ClassProvider).useClass
+            );
         } else if ("useExisting" in provider) {
             return this.get((provider as ExistingProvider).useExisting);
         } else if ("useFactory" in provider) {
@@ -141,13 +157,16 @@ export class Injector {
     }
 
     private resolveTypeInstance(type: Type): any {
-        const paramTypes: Type[] = Reflect.getMetadata("design:paramtypes", type) || [];
+        const paramTypes: Type[] =
+            Reflect.getMetadata("design:paramtypes", type) || [];
 
         const paramInstances: any[] = [];
         for (let i = 0; i < type.length; ++i) {
             // TODO: support `@Inject()` for constructor parameter.
             if (paramTypes[i] == null) {
-                throw new Error("ParamTypes metadata is not found. Do you forget `@Injectable()`?");
+                throw new Error(
+                    "ParamTypes metadata is not found. Do you forget `@Injectable()`?"
+                );
             }
 
             const paramToken = paramTypes[i];
@@ -163,9 +182,11 @@ export class Injector {
             deps = [];
         }
 
-        const depInstances = deps.map((dep) => {
+        const depInstances = deps.map(dep => {
             if (dep == null) {
-                throw new Error("Dependency token should not be `undefined` or `null`.");
+                throw new Error(
+                    "Dependency token should not be `undefined` or `null`."
+                );
             }
             return this.get(dep);
         });
@@ -177,16 +198,20 @@ export class Injector {
 export default class VueTypeScriptInject {
     public static install(Vue: VueConstructor): void {
         Vue.mixin({
-            beforeCreate(this: Vue & { [propertyKey: string]: any; }): void {
+            beforeCreate(this: Vue & { [propertyKey: string]: any }): void {
                 const providers = this.$options.providers || [];
-                const parent = () => this.$parent != null ? this.$parent.$injector : null;
+                const parent = () =>
+                    this.$parent != null ? this.$parent.$injector : null;
                 (this as any).$injector = new Injector(providers, parent);
 
                 if (this.$options.dependencies != null) {
                     const dependencies = this.$options.dependencies;
-                    Object.keys(dependencies).forEach((propertyKey) => {
+                    Object.keys(dependencies).forEach(propertyKey => {
                         const { token, optional } = dependencies[propertyKey];
-                        this[propertyKey] = this.$injector.get(token!, optional ? null : Injector.THROW_IF_NOT_FOUND);
+                        this[propertyKey] = this.$injector.get(
+                            token!,
+                            optional ? null : Injector.THROW_IF_NOT_FOUND
+                        );
                     });
                 }
             }

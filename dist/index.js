@@ -2,11 +2,11 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 var vue_class_component_1 = require("vue-class-component");
 var injectableDecorator = function () { return undefined; };
-function Injectable() {
+function injectable() {
     return injectableDecorator;
 }
-exports.Injectable = Injectable;
-function Inject(token) {
+exports.injectable = injectable;
+function inject(token) {
     return function (target, propertyKey) {
         if (token === undefined) {
             token = Reflect.getMetadata("design:type", target, propertyKey);
@@ -29,8 +29,8 @@ function Inject(token) {
         decorator(target, propertyKey);
     };
 }
-exports.Inject = Inject;
-function Optional() {
+exports.inject = inject;
+function optional() {
     return function (target, propertyKey) {
         var decorator = vue_class_component_1.createDecorator(function (options, key) {
             if (options.dependencies == null) {
@@ -44,7 +44,7 @@ function Optional() {
         decorator(target, propertyKey);
     };
 }
-exports.Optional = Optional;
+exports.optional = optional;
 var Injector = /** @class */ (function () {
     function Injector(providers, parent) {
         var _this = this;
@@ -52,9 +52,8 @@ var Injector = /** @class */ (function () {
         providers.forEach(function (provider) {
             _this._tokenProviderMap.set(typeof provider === "function" ? provider : provider.provide, provider);
         });
-        this._parent = typeof parent === "function"
-            ? parent
-            : function () { return parent || null; };
+        this._parent =
+            typeof parent === "function" ? parent : function () { return parent || null; };
     }
     Object.defineProperty(Injector.prototype, "parent", {
         get: function () {
@@ -138,7 +137,9 @@ var VueTypeScriptInject = /** @class */ (function () {
             beforeCreate: function () {
                 var _this = this;
                 var providers = this.$options.providers || [];
-                var parent = function () { return _this.$parent != null ? _this.$parent.$injector : null; };
+                var parent = function () {
+                    return _this.$parent != null ? _this.$parent.$injector : null;
+                };
                 this.$injector = new Injector(providers, parent);
                 if (this.$options.dependencies != null) {
                     var dependencies_1 = this.$options.dependencies;

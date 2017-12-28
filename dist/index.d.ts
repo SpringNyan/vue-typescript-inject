@@ -39,9 +39,9 @@ export declare type FactoryProvider = {
     useFactory: Function;
     deps?: Token[];
 };
-export declare function Injectable(): ClassDecorator;
-export declare function Inject(token?: Token): VueDecorator;
-export declare function Optional(): VueDecorator;
+export declare function injectable(): ClassDecorator;
+export declare function inject(token?: Token): VueDecorator;
+export declare function optional(): VueDecorator;
 export declare class Injector {
     static readonly THROW_IF_NOT_FOUND: Object;
     readonly parent: Injector | null;
