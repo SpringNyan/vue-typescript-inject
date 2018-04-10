@@ -16,10 +16,10 @@
         "inject"
     ],
     "devDependencies": {
-        "@types/reflect-metadata": "0.0.5",
-        "typescript": "^2.6.2",
-        "vue": "^2.5.11",
-        "vue-class-component": "^6.1.2"
+        "reflect-metadata": "^0.1.12",
+        "typescript": "^2.8.1",
+        "vue": "^2.5.16",
+        "vue-class-component": "^6.2.0"
     },
     "scripts": {
         "build": "tsc -p ."
