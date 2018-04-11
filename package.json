@@ -4,24 +4,21 @@
     "description": "Angular-like injector for Vue",
     "authors": "SpringNyan",
     "license": "MIT",
-    "main": "dist/index.js",
-    "typings": "dist/index.d.ts",
+    "main": "dist/vue-typescript-inject.js",
+    "typings": "lib/index.d.ts",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/SpringNyan/vue-typescript-inject.git"
     },
-    "keywords": [
-        "vue",
-        "typescript",
-        "inject"
-    ],
+    "keywords": ["vue", "typescript", "inject"],
     "devDependencies": {
         "reflect-metadata": "^0.1.12",
         "typescript": "^2.8.1",
         "vue": "^2.5.16",
-        "vue-class-component": "^6.2.0"
+        "vue-class-component": "^6.2.0",
+        "webpack": "^4.5.0"
     },
     "scripts": {
-        "build": "tsc -p ."
+        "build": "tsc -p . && webpack"
     }
 }
