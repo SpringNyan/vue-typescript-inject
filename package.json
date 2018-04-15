@@ -1,29 +1,29 @@
 {
-    "name": "vue-typescript-inject",
-    "version": "0.2.0",
-    "description": "Angular-like injector for Vue",
-    "authors": "SpringNyan",
-    "license": "MIT",
-    "main": "dist/vue-typescript-inject.js",
-    "typings": "lib/index.d.ts",
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/SpringNyan/vue-typescript-inject.git"
-    },
-    "keywords": [
-        "vue",
-        "typescript",
-        "inject"
-    ],
-    "devDependencies": {
-        "reflect-metadata": "^0.1.12",
-        "typescript": "^2.8.1",
-        "vue": "^2.5.16",
-        "vue-class-component": "^6.2.0",
-        "webpack": "^4.5.0",
-        "webpack-cli": "^2.0.14"
-    },
-    "scripts": {
-        "build": "tsc -p . && webpack"
-    }
+  "name": "vue-typescript-inject",
+  "version": "0.2.0",
+  "description": "Angular-like injector for Vue",
+  "authors": "SpringNyan",
+  "license": "MIT",
+  "main": "dist/vue-typescript-inject.js",
+  "typings": "lib/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SpringNyan/vue-typescript-inject.git"
+  },
+  "keywords": [
+    "vue",
+    "typescript",
+    "inject"
+  ],
+  "devDependencies": {
+    "reflect-metadata": "^0.1.12",
+    "typescript": "^2.8.1",
+    "vue": "^2.5.16",
+    "vue-class-component": "^6.2.0",
+    "webpack": "^4.5.0",
+    "webpack-cli": "^2.0.14"
+  },
+  "scripts": {
+    "build": "tsc -p . && webpack"
+  }
 }
