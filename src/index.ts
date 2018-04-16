@@ -27,7 +27,7 @@ export default class VueTypeScriptInject {
 
         if (this.$options.dependencies != null) {
           const dependencies = this.$options.dependencies;
-          Object.keys(dependencies).forEach(propertyKey => {
+          Object.keys(dependencies).forEach((propertyKey) => {
             this[propertyKey] = this.$injector.getByOption(
               dependencies[propertyKey]
             );

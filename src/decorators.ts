@@ -1,7 +1,7 @@
 import { Token } from "./declarations";
 import { makeDecorator, typeFromMetadata } from "./util";
 
-const injectableDecorator: ClassDecorator = target => target;
+const injectableDecorator: ClassDecorator = (target) => target;
 export function injectable(): ClassDecorator {
   return injectableDecorator;
 }

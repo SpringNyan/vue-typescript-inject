@@ -18,7 +18,7 @@ export class Injector {
   private readonly _tokenInstanceMap = new Map<Token, any>();
 
   constructor(providers: Provider[], parent?: Injector | null) {
-    providers.forEach(provider => {
+    providers.forEach((provider) => {
       this._tokenProviderMap.set(
         typeof provider === "function" ? provider : provider.provide,
         provider
@@ -113,7 +113,7 @@ export class Injector {
       deps = [];
     }
 
-    const depInstances = deps.map(dep => {
+    const depInstances = deps.map((dep) => {
       if (dep == null) {
         throw new Error(
           "Dependency token should not be `undefined` or `null`."
