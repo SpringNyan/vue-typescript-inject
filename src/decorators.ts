@@ -6,7 +6,7 @@ export function injectable(): ClassDecorator {
   return injectableDecorator;
 }
 
-export function inject(token?: Token): PropertyDecorator | ParameterDecorator {
+export function inject(token?: Token): PropertyDecorator & ParameterDecorator {
   return makeDecorator((dependency, target, propertyKey, parameterIndex) => {
     if (token == null) {
       const type = typeFromMetadata(target, propertyKey, parameterIndex);
@@ -21,7 +21,7 @@ export function inject(token?: Token): PropertyDecorator | ParameterDecorator {
   });
 }
 
-export function optional(): PropertyDecorator | ParameterDecorator {
+export function optional(): PropertyDecorator & ParameterDecorator {
   return makeDecorator((dependency, target, propertyKey, parameterIndex) => {
     dependency.optional = true;
   });

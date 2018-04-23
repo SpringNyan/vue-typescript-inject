@@ -11,13 +11,13 @@ export function makeDecorator(
     dependency: DependencyOption,
     target: Object,
     propertyKey: string | symbol,
-    parameterIndex: number
+    parameterIndex: number | undefined
   ) => void
-): ParameterDecorator {
+): PropertyDecorator & ParameterDecorator {
   return (
     target: Object,
     propertyKey: string | symbol,
-    parameterIndex: number
+    parameterIndex?: number
   ) => {
     if (parameterIndex != null) {
       if (!Reflect.hasMetadata(DEPENDENCIES_METADATA_KEY, target)) {
@@ -49,7 +49,7 @@ export function makeDecorator(
 export function typeFromMetadata(
   target: Object,
   propertyKey: string | symbol,
-  parameterIndex: number
+  parameterIndex: number | undefined
 ): Object | null {
   if (parameterIndex != null) {
     const paramtypes = Reflect.getMetadata("design:paramtypes", target) || [];
