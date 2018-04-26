@@ -33,25 +33,36 @@ describe("vue-typescript-inject", () => {
       }
     }
 
+    const serviceAInstance = new ServiceA();
+    serviceAInstance.increase(); // 1
+    serviceAInstance.increase(); // 2
+    serviceAInstance.increase(); // 3
+
     @Component({
-      template: `
+      render: Vue.compile(`
         <div>
-          <span>{{ num }}</span>
-          <button @click="increase()">Increment</button>
+          <span>{{ getNum() }}</span>
+          <button @click="increase()">Increase</button>
         </div>
-      `,
-      providers: [ServiceA, ServiceB]
+      `).render,
+      providers: [
+        {
+          provide: ServiceA,
+          useValue: serviceAInstance
+        },
+        ServiceB
+      ]
     })
     class ComponentA extends Vue {
       @inject() private readonly _serviceA!: ServiceA;
       @inject(ServiceB) private readonly _serviceB!: ServiceB;
 
-      public get num() {
-        return this._serviceA.num;
-      }
-
       public increase() {
         this._serviceA.increase();
+      }
+
+      public getNum() {
+        return this._serviceA.num;
       }
 
       public getStr() {
@@ -61,9 +72,12 @@ describe("vue-typescript-inject", () => {
 
     const wrapperA = mount(ComponentA);
 
-    expect(wrapperA.vm.num).to.equal(0);
+    expect(wrapperA.vm.getNum()).to.equal(3);
+    expect(wrapperA.vm.getStr()).to.equal("3");
+
     wrapperA.find("button").trigger("click");
-    expect(wrapperA.vm.num).to.equal(1);
-    expect(wrapperA.vm.getStr()).to.equal("1");
+
+    expect(wrapperA.vm.getNum()).to.equal(4);
+    expect(wrapperA.vm.getStr()).to.equal("4");
   });
 });

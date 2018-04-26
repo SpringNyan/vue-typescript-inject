@@ -9,5 +9,5 @@ module.exports = {
     library: "vue-typescript-inject",
     libraryTarget: "umd"
   },
-  externals: ["vue", "vue-class-component"]
+  externals: ["vue-class-component"]
 };

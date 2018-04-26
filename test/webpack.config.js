@@ -7,5 +7,14 @@ module.exports = {
     path: __dirname,
     filename: "test.build.js"
   },
-  externals: [nodeExternals()]
+  externals: [
+    nodeExternals({
+      whitelist: ["vue", "vue-class-component"]
+    })
+  ],
+  resolve: {
+    alias: {
+      vue$: "vue/dist/vue.esm.js"
+    }
+  }
 };
