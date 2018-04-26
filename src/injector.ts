@@ -34,16 +34,15 @@ export class Injector {
     token: Token,
     notFoundValue: any = Injector.THROW_IF_NOT_FOUND
   ): any {
-    const value = this.getByOption({
+    return this.getByOption({
       token,
-      optional: notFoundValue !== Injector.THROW_IF_NOT_FOUND
+      optional: notFoundValue !== Injector.THROW_IF_NOT_FOUND,
+      notFoundValue
     });
-
-    return value === Injector.THROW_IF_NOT_FOUND ? notFoundValue : value;
   }
 
   public getByOption(option: DependencyOption): any {
-    const { token, optional } = option;
+    const { token, optional, notFoundValue } = option;
     if (token == null) {
       throw new Error("Token should not be `undefined` or `null`");
     }
@@ -60,11 +59,11 @@ export class Injector {
     }
 
     if (this.parent != null) {
-      return this.parent.get(token);
+      return this.parent.getByOption(option);
     }
 
     if (optional) {
-      return Injector.THROW_IF_NOT_FOUND;
+      return notFoundValue;
     } else {
       throw new Error("Provider is not found.");
     }

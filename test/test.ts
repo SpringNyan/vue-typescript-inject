@@ -8,6 +8,7 @@ import { mount } from "@vue/test-utils";
 import VueTypeScriptInject, {
   injectable,
   inject,
+  optional,
   InjectionToken,
   Injector
 } from "../lib";
@@ -92,7 +93,9 @@ describe("vue-typescript-inject", () => {
     class ServiceC {
       constructor(
         private readonly _service1: ServiceA,
-        @inject(serviceAToken) private readonly _service2: ServiceA
+        @inject(serviceAToken)
+        @optional()
+        private readonly _service2?: ServiceA
       ) {}
 
       public get num1(): number {
@@ -100,7 +103,7 @@ describe("vue-typescript-inject", () => {
       }
 
       public get num2(): number {
-        return this._service2.num;
+        return this._service2 != null ? this._service2.num : -1;
       }
     }
 
@@ -120,5 +123,43 @@ describe("vue-typescript-inject", () => {
     expect(injector.get<ServiceB>(ServiceB).str).to.equal("4");
     expect(injector.get<ServiceC>(ServiceC).num1).to.equal(4);
     expect(injector.get<ServiceC>(ServiceC).num2).to.equal(1);
+
+    @Component({
+      render: Vue.compile(`
+        <div></div>
+      `).render,
+      providers: [ServiceC]
+    })
+    class ComponentB extends Vue {
+      @inject() private readonly _serviceC!: ServiceC;
+
+      public getNum1(): number {
+        return this._serviceC.num1;
+      }
+
+      public getNum2(): number {
+        return this._serviceC.num2;
+      }
+    }
+
+    @Component({
+      render: Vue.compile(`
+      <div>
+        <ComponentB></ComponentB>
+      </div>
+      `).render,
+      components: { ComponentB },
+      providers: [
+        {
+          provide: ServiceA,
+          useValue: serviceAInstance
+        }
+      ]
+    })
+    class ComponentC extends Vue {}
+
+    const wrapperC = mount(ComponentC);
+    expect((wrapperC.vm.$children[0] as ComponentB).getNum1()).to.equal(4);
+    expect((wrapperC.vm.$children[0] as ComponentB).getNum2()).to.equal(-1);
   });
 });

@@ -24,5 +24,6 @@ export function inject(token?: Token): PropertyDecorator & ParameterDecorator {
 export function optional(): PropertyDecorator & ParameterDecorator {
   return makeDecorator((dependency, target, propertyKey, parameterIndex) => {
     dependency.optional = true;
+    dependency.notFoundValue = null;
   });
 }
