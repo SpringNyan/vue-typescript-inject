@@ -5,7 +5,12 @@ import { expect } from "chai";
 import Vue from "vue";
 import Component from "vue-class-component";
 import { mount } from "@vue/test-utils";
-import VueTypeScriptInject, { injectable, inject } from "../lib";
+import VueTypeScriptInject, {
+  injectable,
+  inject,
+  InjectionToken,
+  Injector
+} from "../lib";
 
 Vue.use(VueTypeScriptInject);
 
@@ -79,5 +84,41 @@ describe("vue-typescript-inject", () => {
 
     expect(wrapperA.vm.getNum()).to.equal(4);
     expect(wrapperA.vm.getStr()).to.equal("4");
+
+    expect(wrapperA.vm.$injector.get<ServiceA>(ServiceA).num).to.equal(4);
+
+    const serviceAToken = new InjectionToken<ServiceA>("serviceA");
+    @injectable()
+    class ServiceC {
+      constructor(
+        private readonly _service1: ServiceA,
+        @inject(serviceAToken) private readonly _service2: ServiceA
+      ) {}
+
+      public get num1(): number {
+        return this._service1.num;
+      }
+
+      public get num2(): number {
+        return this._service2.num;
+      }
+    }
+
+    const injector = new Injector(
+      [
+        {
+          provide: serviceAToken,
+          useClass: ServiceA
+        },
+        ServiceC
+      ],
+      wrapperA.vm.$injector
+    );
+    injector.get(serviceAToken).increase();
+    expect(injector.get(serviceAToken).num).to.equal(1);
+    expect(injector.get<ServiceA>(ServiceA).num).to.equal(4);
+    expect(injector.get<ServiceB>(ServiceB).str).to.equal("4");
+    expect(injector.get<ServiceC>(ServiceC).num1).to.equal(4);
+    expect(injector.get<ServiceC>(ServiceC).num2).to.equal(1);
   });
 });
