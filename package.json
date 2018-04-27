@@ -1,6 +1,6 @@
 {
   "name": "vue-typescript-inject",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Angular-like injector for Vue",
   "authors": "SpringNyan",
   "license": "MIT",
