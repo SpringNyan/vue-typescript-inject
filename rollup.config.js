@@ -7,11 +7,13 @@ export default {
   output: [
     {
       file: "./dist/vue-typescript-inject.js",
-      format: "cjs"
+      format: "cjs",
+      exports: "named"
     },
     {
       file: "./dist/vue-typescript-inject.esm.js",
-      format: "esm"
+      format: "esm",
+      exports: "named"
     }
   ],
   plugins: [resolve(), commonjs(), cleanup({ comments: "none" })],
