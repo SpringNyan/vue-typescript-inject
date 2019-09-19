@@ -4,17 +4,19 @@
   "description": "Angular-like injector for Vue",
   "authors": "SpringNyan",
   "license": "MIT",
-  "main": "dist/vue-typescript-inject.js",
-  "typings": "lib/index.d.ts",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/SpringNyan/vue-typescript-inject.git"
-  },
+  "repository": "github:SpringNyan/vue-typescript-inject",
   "keywords": [
     "vue",
     "typescript",
     "inject"
   ],
+  "files": [
+    "dist",
+    "lib"
+  ],
+  "main": "dist/vue-typescript-inject.js",
+  "module": "dist/vue-typescript-inject.esm.js",
+  "typings": "lib/index.d.ts",
   "devDependencies": {
     "@types/chai": "^4.2.2",
     "@types/mocha": "^5.2.7",
