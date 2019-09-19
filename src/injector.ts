@@ -100,7 +100,7 @@ export class Injector {
       }
 
       throw new Error(
-        "ParamTypes metadata is not found. Do you forget `@Injectable()`?"
+        `ParamTypes metadata is not found. Do you forget \`@injectable()\` for class ${type.name}?`
       );
     }
 
