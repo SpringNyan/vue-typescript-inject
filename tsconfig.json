@@ -2,12 +2,13 @@
   "compilerOptions": {
     "target": "es5",
     "lib": ["dom", "es5", "es2015"],
-    "module": "es2015",
+    "module": "esnext",
     "moduleResolution": "node",
     "outDir": "lib",
     "declaration": true,
     "strict": true,
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "importHelpers": true
   },
   "include": ["src/**/*.ts"]
 }
