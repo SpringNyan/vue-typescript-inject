@@ -117,6 +117,7 @@ describe("vue-typescript-inject", () => {
       ],
       wrapperA.vm.$injector
     );
+    expect(injector.get(Injector)).to.equal(injector);
     injector.get(serviceAToken).increase();
     expect(injector.get(serviceAToken).num).to.equal(1);
     expect(injector.get<ServiceA>(ServiceA).num).to.equal(4);
