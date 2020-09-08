@@ -58,6 +58,10 @@ export class Injector {
       return instance;
     }
 
+    if (token === Injector) {
+      return this;
+    }
+
     if (this.parent != null) {
       return this.parent.getByOption(option);
     }

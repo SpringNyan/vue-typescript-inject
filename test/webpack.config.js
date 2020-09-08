@@ -9,7 +9,7 @@ module.exports = {
   },
   externals: [
     nodeExternals({
-      whitelist: ["vue", "vue-class-component"]
+      allowlist: ["vue", "vue-class-component"]
     })
   ],
   resolve: {
